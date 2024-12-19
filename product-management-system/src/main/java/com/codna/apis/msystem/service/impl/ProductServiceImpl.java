@@ -5,10 +5,15 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import com.codna.apis.msystem.dto.ProductDto;
+import com.codna.apis.msystem.dto.ProductResponse;
 import com.codna.apis.msystem.model.Product;
 import com.codna.apis.msystem.repository.ProductRepository;
 import com.codna.apis.msystem.service.ProductService;
@@ -85,6 +90,40 @@ public class ProductServiceImpl implements ProductService {
 			return true;
 		}
 		return false;
+	}
+
+	//Method to implement Pagination
+	@Override
+	public ProductResponse getProductsWithPagination(int pageNumber, int pageSize, String sortBy, String sortDirection) {
+
+//		Sort ascending = Sort.by(sortBy).ascending();
+//		Sort descending = Sort.by(sortBy).descending();
+		
+		Sort sort = sortDirection.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+		
+		Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+		Page<Product> page = productRepository.findAll(pageable);
+		
+		List<Product> products = page.getContent();
+		List<ProductDto> productDtos = products.stream().map(product -> new ProductDto(
+				product.getId(),
+				product.getName(),
+				product.getDescription(),
+				product.getPrice(),
+				product.getQuantity()
+			)).toList();
+		
+		long totalElements = page.getTotalElements();
+		int totalPages = page.getTotalPages();
+		boolean first = page.isFirst();
+		boolean last = page.isLast();
+		
+		ProductResponse productResponse = ProductResponse.builder().products(productDtos)
+										.totalElements(totalElements).totalPages(totalPages)
+										.isFirst(first).isLast(last).pageNumber(pageNumber)
+										.pageSize(pageSize).build();
+		
+		return productResponse;
 	}
 
 }

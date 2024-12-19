@@ -3,6 +3,7 @@ package com.codna.apis.msystem.service;
 import java.util.List;
 
 import com.codna.apis.msystem.dto.ProductDto;
+import com.codna.apis.msystem.dto.ProductResponse;
 import com.codna.apis.msystem.model.Product;
 
 public interface ProductService {
@@ -14,4 +15,6 @@ public interface ProductService {
 	public ProductDto getProductById(Integer id);
 	
 	public Boolean deleteProduct(Integer id);
+	
+	public ProductResponse getProductsWithPagination(int pageNumber, int pageSize, String sortBy, String sortDirection);
 }

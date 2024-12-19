@@ -12,9 +12,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.codna.apis.msystem.dto.ProductDto;
+import com.codna.apis.msystem.dto.ProductResponse;
 import com.codna.apis.msystem.service.ProductService;
 
 @RestController
@@ -27,7 +29,7 @@ public class ProductController {
 	}
 	
 	@GetMapping("/products")
-	public ResponseEntity<?> getProdut(){
+	public ResponseEntity<?> getProduts(){
 		
 		List<ProductDto> allProducts = new ArrayList<>();
 		try {
@@ -43,7 +45,7 @@ public class ProductController {
 	}
 	
 	@GetMapping("/product/{id}")
-	public ResponseEntity<?> getProduts(@PathVariable(name = "id") Integer id){
+	public ResponseEntity<?> getProdut(@PathVariable(name = "id") Integer id){
 		
 		ProductDto productDto = null;
 		try {
@@ -88,5 +90,27 @@ public class ProductController {
 		}
 		
 		return new ResponseEntity<>("Delete Success", HttpStatus.OK);
+	}
+	
+	//Controller for pagination implementation
+	@GetMapping("/page-products")
+	public ResponseEntity<?> getProdutsPaginate(@RequestParam(name = "pageNumber", defaultValue = "0") int pageNumber, 
+			@RequestParam(name = "pageSize", defaultValue = "2") int pageSize,
+			@RequestParam(name = "sortBy", defaultValue = "id") String sortBy,
+			@RequestParam(name = "sortDir", defaultValue = "asc") String sortDirection
+			){
+		
+		ProductResponse productResponse = null;
+		try {
+			productResponse = productService.getProductsWithPagination(pageNumber, pageSize, sortBy, sortDirection);
+			if(ObjectUtils.isEmpty(productResponse)) {
+				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+			}
+			
+		}catch(Exception e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		
+		return new ResponseEntity<>(productResponse, HttpStatus.OK);
 	}
 }
